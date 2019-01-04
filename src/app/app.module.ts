@@ -20,13 +20,16 @@ import { environment } from '../environments/environment';
 import {RouterStateSerializer, StoreRouterConnectingModule} from "@ngrx/router-store";
 
 import { EffectsModule } from '@ngrx/effects';
+import { reducers, metaReducers } from './reducers';
+import { AuthGuard } from './auth/auth.guard';
+import {CustomSerializer} from './shared/util';
 
 
 const routes: Routes = [
     {
         path: 'courses',
         loadChildren: './courses/courses.module#CoursesModule',
-        canActivate: [],
+        canActivate: [AuthGuard],
     },
     {
         path: "**",
@@ -50,8 +53,12 @@ const routes: Routes = [
         MatListModule,
         MatToolbarModule,
         AuthModule.forRoot(),
+        StoreModule.forRoot(reducers, { metaReducers }),
+        EffectsModule.forRoot([]),
+        StoreRouterConnectingModule.forRoot({stateKey:'router'}),
+        !environment.production ? StoreDevtoolsModule.instrument() : [],
     ],
-    providers: [],
+    providers: [ {provide: RouterStateSerializer, useClass: CustomSerializer}],
     bootstrap: [AppComponent]
 })
 export class AppModule {
